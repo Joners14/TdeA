@@ -4,6 +4,7 @@ import { TextInput, Button } from "react-native-paper";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 import { Ionicons } from "@expo/vector-icons"; // Importamos el ícono de flecha
+import LottieView from "lottie-react-native";
 
 const Login = ({ navigation }) => {
     const [email, setEmail] = useState("");
@@ -30,6 +31,14 @@ const Login = ({ navigation }) => {
             <TouchableOpacity onPress={() => navigation.navigate("Home")} style={styles.backButton}>
                 <Ionicons name="arrow-back" size={28} color="black" />
             </TouchableOpacity>
+
+            <LottieView
+                source={require("../assets/Animation - 1745355344731.json")}
+                autoPlay
+                loop
+                style={{width:150, height:150}}
+            
+            />
 
             <Text style={styles.title}>Inmobiliaria Centenario</Text>
 

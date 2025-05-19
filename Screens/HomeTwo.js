@@ -1,42 +1,47 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
-    View, Text, Image, TouchableOpacity, StyleSheet, ScrollView 
+    View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Alert 
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
-
-const properties = [
-    {
-        id: "1",
-        name: "Apartamento en Medellín",
-        price: "$500,000,000 COP",
-        location: "Castilla, Medellín",
-        image: require("../Constant/DataBase/Apartamento1.jpg"),
-    },
-    {
-        id: "2",
-        name: "Casa en Envigado",
-        price: "$850,000,000 COP",
-        location: "Envigado, Antioquia",
-        image: require("../Constant/DataBase/Apartamento2.jpg"),
-    },
-    {
-        id: "3",
-        name: "Finca en Rionegro",
-        price: "$1,500,000,000 COP",
-        location: "Rionegro, Antioquia",
-        image: require("../Constant/DataBase/Apartamento3.jpg"),
-    },
-];
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
 
 const HomeTwo = () => {
     const navigation = useNavigation();
     const [menuVisible, setMenuVisible] = useState(false);
+    const [properties, setProperties] = useState([]); // Estado para almacenar propiedades
 
     const handleLogout = () => {
-        // agregar la logica para cerrar sesion desde firebase
+        // Lógica para cerrar sesión (agregar la función de logout de Firebase si es necesario)
         navigation.navigate("Home");
     };
+    const handleReturn = () =>{
+        navigation.navigate("MyPublic");
+    };
+    const handleStatitic = () =>{
+        navigation.navigate("Statictics");
+
+    };
+
+    useFocusEffect(
+        React.useCallback(() => {
+            const loadProperties = async () => {
+                try {
+                    const storedData = await AsyncStorage.getItem('inmuebles');
+                    if (storedData) {
+                        setProperties(JSON.parse(storedData));
+                    }
+                } catch (error) {
+                    console.log('Error cargando propiedades:', error);
+                    Alert.alert('Error', 'No se pudieron cargar las propiedades.');
+                }
+            };
+    
+            loadProperties();
+        }, [])
+    );
+     // Se ejecuta solo cuando el componente se monta
 
     return (
         <View style={styles.container}>
@@ -55,24 +60,59 @@ const HomeTwo = () => {
                         <MaterialIcons name="logout" size={24} color="#333" />
                         <Text style={styles.menuText}>Cerrar Sesión</Text>
                     </TouchableOpacity>
+                    <TouchableOpacity onPress={handleReturn} style={styles.menuItem}>
+                        <MaterialIcons name="business" size={24} color="#333" />
+                        <Text>Mis propiedades</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={handleStatitic} style={styles.menuItem}>
+                        <MaterialIcons name="insert-chart" size={24} color="#333" />
+                        <Text>Mis Estadisticas</Text>
+                    </TouchableOpacity>
                 </View>
+                
             )}
 
-            {/* Lista de Propiedades */}
+            {/* Botón para publicar propiedad */}
+            <View>
+                <TouchableOpacity
+                    style={styles.addButton}
+                    onPress={() => navigation.navigate("RegisterProperty")}
+                >
+                    <Text style={styles.addButtonText}>+ Publicar Propiedad</Text>
+                </TouchableOpacity>
+            </View>
+
+            {/* Lista de propiedades */}
             <ScrollView contentContainerStyle={styles.propertyGrid}>
-                {properties.map((item) => (
-                    <View key={item.id} style={styles.card}>
-                        <Image source={item.image} style={styles.image} />
-                        <View style={styles.info}>
-                            <Text style={styles.propertyName}>{item.name}</Text>
-                            <Text style={styles.propertyPrice}>{item.price}</Text>
-                            <Text style={styles.propertyLocation}>{item.location}</Text>
-                            <TouchableOpacity style={styles.button}>
-                                <Text style={styles.buttonText}>Ver Detalles</Text>
-                            </TouchableOpacity>
+                {properties.length > 0 ? (
+                    properties.map((item) => (
+                        <View key={item.id} style={styles.card}>
+                            {/* Mostrar la imagen de la propiedad */}
+                            {item.imagenURI ? (
+                                <Image source={{ uri: item.imagenURI }} style={styles.image} />
+                            ) : (
+                                <Image source={require("../Constant/DataBase/Apartamento1.jpg")} style={styles.image} />
+                            )}
+                            <View style={styles.info}>
+                                <Text style={styles.propertyName}>{item.titulo}</Text>
+                                <Text style={styles.propertyPrice}>${item.precio.toLocaleString()} COP</Text>
+                                <Text style={styles.propertyLocation}>{item.ciudad}</Text>
+                                <TouchableOpacity style={styles.button}>
+                                    <Text style={styles.buttonText}>Ver Detalles</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={{ backgroundColor: "#6200ee", padding: 10, borderRadius: 5, marginTop: 15 }}
+                                    onPress={() => navigation.navigate("Schedule", { property: item })} // envía los datos del inmueble
+                                >
+                                    <Text style={{ color: "white", textAlign: "center", fontWeight: "bold" }}>Agendar</Text>
+                                </TouchableOpacity>
+
+                            </View>
                         </View>
-                    </View>
-                ))}
+                    ))
+                ) : (
+                    <Text style={{ textAlign: "center", marginTop: 20 }}>No hay propiedades registradas</Text>
+                )}
             </ScrollView>
         </View>
     );
@@ -175,6 +215,19 @@ const styles = StyleSheet.create({
     buttonText: {
         color: "white",
         fontSize: 14,
+        fontWeight: "bold",
+    },
+    addButton: {
+        backgroundColor: "#6200ee",
+        padding: 12,
+        margin: 15,
+        borderRadius: 8,
+        alignItems: "center",
+        elevation: 3,
+    },
+    addButtonText: {
+        color: "white",
+        fontSize: 16,
         fontWeight: "bold",
     },
 });

@@ -57,6 +57,12 @@ const Home = () => {
                     {isExpanded && (
                         <Animated.View style={styles.descriptionContainer}>
                             <Text style={styles.description}>{item.description}</Text>
+                        <TouchableOpacity style = {styles.reserveButton}
+                        onPress={()=>navigation.navigate("Login")}
+                        
+                        >
+                        <Text style ={styles.reserveButtonText}>!!Reserva Ahora¡¡</Text>
+                        </TouchableOpacity>
                         </Animated.View>
                     )}
                 </View>
@@ -94,7 +100,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#f5f5f5",
         paddingHorizontal: 15,
-        paddingTop: 50, // Agrega espacio en la parte superior
+        paddingTop: 10, // Agrega espacio en la parte superior
     },
     headerContainer: {
         flexDirection: "row",
@@ -178,6 +184,20 @@ const styles = StyleSheet.create({
     description: {
         fontSize: 14,
         color: "#333",
+    },
+    reserveButton: {
+        marginTop: 19,
+        backgroundColor: "#6200ee",
+        paddingVertical: 5,
+        paddingHorizontal: 12,
+        borderRadius: 5,
+        alignSelf: "center",
+
+    },
+    reserveButtonText: {
+        color: "white",
+        fontSize: 16,
+        fontWeight: "bold",
     },
 });
 
