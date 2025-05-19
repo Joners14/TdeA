@@ -45,6 +45,10 @@ const NavigationStack = () => {
                 name= "CrudProperty"
                 component={CrudProperty}
             />
+            <Stack.Screen
+                name='Statictics'
+                component={Statictics}
+            />
         </Stack.Navigator>
     );
 };
