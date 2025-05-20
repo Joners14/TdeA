@@ -7,6 +7,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system';
 import { storage } from '../firebaseConfig';
 import { useNavigation } from '@react-navigation/native';
+//import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+
 
 export default function RegisterProperty() {
   const [image, setImage] = useState(null);
@@ -42,12 +44,12 @@ export default function RegisterProperty() {
     }
 
     try {
+
       // Guardar copia local de la imagen
       const filename = image.split('/').pop();
       const localUri = `${FileSystem.documentDirectory}${filename}`;
       await FileSystem.copyAsync({ from: image, to: localUri });
 
-      // Crear nuevo objeto de propiedad
       const newProperty = {
         id: Date.now().toString(),
         titulo: title,
@@ -58,9 +60,10 @@ export default function RegisterProperty() {
         fecha: new Date().toISOString(),
       };
 
-      // Obtener las propiedades almacenadas anteriormente
+      //Obtener las propiedades almacenadas anteriormente
       const storedData = await AsyncStorage.getItem('inmuebles');
       const existingProperties = storedData ? JSON.parse(storedData) : [];
+      
    
       // Guardar el nuevo
       const updatedProperties = [...existingProperties, newProperty];

@@ -8,6 +8,8 @@ import RegisterProperty from '../Screens/RegisterProperty';
 import MyPublic from '../Screens/MyPublic';
 import CrudProperty from '../Screens/CrudProperty';
 import Statictics from '../Screens/Statictics';
+import Schedule from '../Screens/Schedule';
+import Appointments from '../Screens/Appointments';
 
 
 const Stack = createStackNavigator();
@@ -48,6 +50,14 @@ const NavigationStack = () => {
             <Stack.Screen
                 name='Statictics'
                 component={Statictics}
+            />
+            <Stack.Screen
+                name='Schedule'
+                component={Schedule}
+            />
+            <Stack.Screen
+                name='Appointments'
+                component={Appointments}
             />
         </Stack.Navigator>
     );

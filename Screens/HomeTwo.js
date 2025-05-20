@@ -24,6 +24,10 @@ const HomeTwo = () => {
 
     };
 
+    const handleSchedule =() =>{
+        navigation.navigate("Appointments");
+    };
+
     useFocusEffect(
         React.useCallback(() => {
             const loadProperties = async () => {
@@ -67,6 +71,10 @@ const HomeTwo = () => {
                     <TouchableOpacity onPress={handleStatitic} style={styles.menuItem}>
                         <MaterialIcons name="insert-chart" size={24} color="#333" />
                         <Text>Mis Estadisticas</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={handleSchedule} style={styles.menuItem}>
+                        <MaterialIcons name="Schedule" size={24} color="#333"/>
+                        <Text>Agenda</Text>
                     </TouchableOpacity>
                 </View>
                 
