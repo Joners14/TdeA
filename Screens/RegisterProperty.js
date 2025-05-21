@@ -4,11 +4,9 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as FileSystem from 'expo-file-system';
 import { storage } from '../firebaseConfig';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useNavigation } from '@react-navigation/native';
-//import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-
 
 export default function RegisterProperty() {
   const [image, setImage] = useState(null);
@@ -18,6 +16,7 @@ export default function RegisterProperty() {
   const [city, setCity] = useState('');
 
   const navigation = useNavigation();
+
   const pickImage = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -25,7 +24,7 @@ export default function RegisterProperty() {
         allowsEditing: true,
         quality: 1,
       });
-  
+
       if (!result.canceled) {
         const selectedAsset = result.assets[0];
         setImage(selectedAsset.uri);
@@ -35,7 +34,23 @@ export default function RegisterProperty() {
       Alert.alert('Error', 'No se pudo seleccionar la imagen.');
     }
   };
-  
+
+  const uploadImageToFirebase = async (uri) => {
+    try {
+      const response = await fetch(uri);
+      const blob = await response.blob();
+
+      const filename = uri.split('/').pop();
+      const imageRef = ref(storage, `imagenesInmuebles/${filename}`);
+      await uploadBytes(imageRef, blob);
+
+      const downloadURL = await getDownloadURL(imageRef);
+      return downloadURL;
+    } catch (error) {
+      console.error('Error subiendo la imagen a Firebase:', error);
+      throw error;
+    }
+  };
 
   const handleUpload = async () => {
     if (!image || !title || !description || !price || !city) {
@@ -44,11 +59,7 @@ export default function RegisterProperty() {
     }
 
     try {
-
-      // Guardar copia local de la imagen
-      const filename = image.split('/').pop();
-      const localUri = `${FileSystem.documentDirectory}${filename}`;
-      await FileSystem.copyAsync({ from: image, to: localUri });
+      const imageUrI = await uploadImageToFirebase(image);
 
       const newProperty = {
         id: Date.now().toString(),
@@ -56,22 +67,19 @@ export default function RegisterProperty() {
         descripcion: description,
         precio: parseFloat(price),
         ciudad: city,
-        imagenURI: localUri,
+        imagenURI: imageUrI,
         fecha: new Date().toISOString(),
       };
 
-      //Obtener las propiedades almacenadas anteriormente
       const storedData = await AsyncStorage.getItem('inmuebles');
       const existingProperties = storedData ? JSON.parse(storedData) : [];
-      
-   
-      // Guardar el nuevo
+
       const updatedProperties = [...existingProperties, newProperty];
       await AsyncStorage.setItem('inmuebles', JSON.stringify(updatedProperties));
 
       alert('Inmueble registrado exitosamente');
 
-      navigation.navigate("HomeTwo");
+      navigation.navigate("Perfil");
 
       // Limpiar formularios
       setImage(null);
@@ -91,10 +99,20 @@ export default function RegisterProperty() {
       <TextInput value={title} onChangeText={setTitle} style={styles.input} />
 
       <Text style={styles.label}>Descripción:</Text>
-      <TextInput value={description} onChangeText={setDescription} style={styles.input} multiline />
+      <TextInput
+        value={description}
+        onChangeText={setDescription}
+        style={styles.input}
+        multiline
+      />
 
       <Text style={styles.label}>Precio:</Text>
-      <TextInput value={price} onChangeText={setPrice} style={styles.input} keyboardType="numeric" />
+      <TextInput
+        value={price}
+        onChangeText={setPrice}
+        style={styles.input}
+        keyboardType="numeric"
+      />
 
       <Text style={styles.label}>Ciudad:</Text>
       <TextInput value={city} onChangeText={setCity} style={styles.input} />

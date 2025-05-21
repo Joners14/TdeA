@@ -3,7 +3,7 @@ import { View, Text, Alert, TouchableOpacity, StyleSheet } from "react-native";
 import { TextInput, Button } from "react-native-paper";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebaseConfig";
-import { Ionicons } from "@expo/vector-icons"; // Importamos el ícono de flecha
+import { Ionicons } from "@expo/vector-icons";
 import LottieView from "lottie-react-native";
 
 const Login = ({ navigation }) => {
@@ -19,7 +19,7 @@ const Login = ({ navigation }) => {
         try {
             await signInWithEmailAndPassword(auth, email, password);
             Alert.alert("Éxito", "Inicio de sesión exitoso");
-            navigation.navigate("HomeTwo"); // Redirige a HomeTwo.js
+            navigation.navigate("Perfil");
         } catch (error) {
             Alert.alert("Error", "Credenciales incorrectas o usuario no registrado");
         }
@@ -27,17 +27,12 @@ const Login = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            {/* se implementa el boton de regresar al home*/}
-            <TouchableOpacity onPress={() => navigation.navigate("Home")} style={styles.backButton}>
-                <Ionicons name="arrow-back" size={28} color="black" />
-            </TouchableOpacity>
-
+            
             <LottieView
                 source={require("../assets/Animation - 1745355344731.json")}
                 autoPlay
                 loop
-                style={{width:150, height:150}}
-            
+                style={{ width: 150, height: 150 }}
             />
 
             <Text style={styles.title}>Inmobiliaria Centenario</Text>
@@ -83,32 +78,34 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#f5f5f5",
+        backgroundColor: "#f0f4f7", // Igual que HomeTwo
         padding: 20,
     },
     backButton: {
         position: "absolute",
-        top: 40, 
+        top: 40,
         left: 20,
     },
     title: {
         fontSize: 24,
         fontWeight: "bold",
         marginBottom: 30,
-        color: "#333",
+        color: "#4a90e2", // Azul del header de HomeTwo
+        fontStyle: "italic",
     },
     input: {
         width: "100%",
         marginBottom: 15,
+        backgroundColor: "white",
     },
     button: {
         width: "100%",
         padding: 5,
-        backgroundColor: "#6200ee",
+        backgroundColor: "#4a90e2", // Botón azul como HomeTwo
     },
     registerText: {
         marginTop: 20,
-        color: "#6200ee",
+        color: "#4a90e2",
         fontSize: 16,
     },
 });

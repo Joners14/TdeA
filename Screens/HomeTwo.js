@@ -1,125 +1,161 @@
-import React, { useState, useEffect } from "react";
-import { 
-    View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Alert 
+import React, { useState, useRef } from "react";
+import {
+    View,
+    Text,
+    Image,
+    TouchableOpacity,
+    StyleSheet,
+    ScrollView,
+    Alert,
+    Animated,
+    TouchableWithoutFeedback
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import { MaterialIcons } from "@expo/vector-icons";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useFocusEffect } from "@react-navigation/native";
 
 const HomeTwo = () => {
     const navigation = useNavigation();
     const [menuVisible, setMenuVisible] = useState(false);
-    const [properties, setProperties] = useState([]); // Estado para almacenar propiedades
+    const [properties, setProperties] = useState([]);
+    const menuAnim = useRef(new Animated.Value(0)).current;
 
-    const handleLogout = () => {
-        // Lógica para cerrar sesión (agregar la función de logout de Firebase si es necesario)
-        navigation.navigate("Home");
+    const toggleMenu = () => {
+        if (menuVisible) {
+            Animated.timing(menuAnim, {
+                toValue: 0,
+                duration: 200,
+                useNativeDriver: true,
+            }).start(() => setMenuVisible(false));
+        } else {
+            setMenuVisible(true);
+            Animated.timing(menuAnim, {
+                toValue: 1,
+                duration: 200,
+                useNativeDriver: true,
+            }).start();
+        }
     };
-    const handleReturn = () =>{
-        navigation.navigate("MyPublic");
-    };
-    const handleStatitic = () =>{
-        navigation.navigate("Statictics");
 
-    };
-
-    const handleSchedule =() =>{
-        navigation.navigate("Appointments");
-    };
+    const handleLogout = () => navigation.navigate("Inicio");
+    const handleReturn = () => navigation.navigate("Mis Publicaciones");
+    const handleStatitic = () => navigation.navigate("Mis Estadisticas");
+    const handleSchedule = () => navigation.navigate("Lista Citas");
 
     useFocusEffect(
         React.useCallback(() => {
             const loadProperties = async () => {
                 try {
-                    const storedData = await AsyncStorage.getItem('inmuebles');
-                    if (storedData) {
-                        setProperties(JSON.parse(storedData));
-                    }
+                    const storedData = await AsyncStorage.getItem("inmuebles");
+                    if (storedData) setProperties(JSON.parse(storedData));
                 } catch (error) {
-                    console.log('Error cargando propiedades:', error);
-                    Alert.alert('Error', 'No se pudieron cargar las propiedades.');
+                    console.log("Error cargando propiedades:", error);
+                    Alert.alert("Error", "No se pudieron cargar las propiedades.");
                 }
             };
-    
             loadProperties();
         }, [])
     );
-     // Se ejecuta solo cuando el componente se monta
 
     return (
         <View style={styles.container}>
-            {/* Encabezado */}
             <View style={styles.header}>
-                <Text style={styles.title}>Bienvenido Inmobiliaria Centenario</Text>
-                <TouchableOpacity onPress={() => setMenuVisible(!menuVisible)}>
-                    <MaterialIcons name="settings" size={28} color="white" />
+                <Text style={styles.title}>🏡 Inmobiliaria Centenario</Text>
+                <TouchableOpacity onPress={toggleMenu}>
+                    <FontAwesome name="user-circle-o" size={30} color="white" />
                 </TouchableOpacity>
             </View>
 
-            {/* Menú desplegable */}
             {menuVisible && (
-                <View style={styles.menu}>
-                    <TouchableOpacity onPress={handleLogout} style={styles.menuItem}>
-                        <MaterialIcons name="logout" size={24} color="#333" />
-                        <Text style={styles.menuText}>Cerrar Sesión</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={handleReturn} style={styles.menuItem}>
-                        <MaterialIcons name="business" size={24} color="#333" />
-                        <Text>Mis propiedades</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={handleStatitic} style={styles.menuItem}>
-                        <MaterialIcons name="insert-chart" size={24} color="#333" />
-                        <Text>Mis Estadisticas</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={handleSchedule} style={styles.menuItem}>
-                        <MaterialIcons name="Schedule" size={24} color="#333"/>
-                        <Text>Agenda</Text>
-                    </TouchableOpacity>
-                </View>
-                
-            )}
-
-            {/* Botón para publicar propiedad */}
-            <View>
-                <TouchableOpacity
-                    style={styles.addButton}
-                    onPress={() => navigation.navigate("RegisterProperty")}
-                >
-                    <Text style={styles.addButtonText}>+ Publicar Propiedad</Text>
+    <TouchableWithoutFeedback onPress={toggleMenu}>
+        <View style={styles.overlay}>
+            <Animated.View
+                style={[
+                    styles.menu,
+                    {
+                        opacity: menuAnim,
+                        transform: [
+                            {
+                                translateY: menuAnim.interpolate({
+                                    inputRange: [0, 1],
+                                    outputRange: [-20, 0],
+                                }),
+                            },
+                        ],
+                    },
+                ]}
+            >
+                <TouchableOpacity onPress={handleLogout} style={styles.menuItem}>
+                    <MaterialIcons name="logout" size={22} color="#333" />
+                    <Text style={styles.menuText}>Cerrar Sesión</Text>
                 </TouchableOpacity>
-            </View>
+                <TouchableOpacity onPress={handleReturn} style={styles.menuItem}>
+                    <MaterialIcons name="business" size={22} color="#333" />
+                    <Text style={styles.menuText}>Mis propiedades</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleStatitic} style={styles.menuItem}>
+                    <MaterialIcons name="insert-chart" size={22} color="#333" />
+                    <Text style={styles.menuText}>Mis Estadísticas</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleSchedule} style={styles.menuItem}>
+                    <MaterialIcons name="schedule" size={22} color="#333" />
+                    <Text style={styles.menuText}>Agenda</Text>
+                </TouchableOpacity>
+            </Animated.View>
+        </View>
+    </TouchableWithoutFeedback>
+)}
 
-            {/* Lista de propiedades */}
+
+            <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => navigation.navigate("Registrar Propiedad")}
+            >
+                <Text style={styles.addButtonText}>+ Publicar Propiedad</Text>
+            </TouchableOpacity>
+
             <ScrollView contentContainerStyle={styles.propertyGrid}>
                 {properties.length > 0 ? (
-                    properties.map((item) => (
-                        <View key={item.id} style={styles.card}>
-                            {/* Mostrar la imagen de la propiedad */}
+                    properties.map((item, index) => (
+                        <View key={index} style={styles.card}>
                             {item.imagenURI ? (
-                                <Image source={{ uri: item.imagenURI }} style={styles.image} />
+                                <Image
+                                    source={{ uri: item.imagenURI }}
+                                    style={styles.image}
+                                    onError={() =>
+                                        Alert.alert("Imagen no cargada", "No se puede mostrar la imagen.")
+                                    }
+                                />
                             ) : (
-                                <Image source={require("../Constant/DataBase/Apartamento1.jpg")} style={styles.image} />
+                                <Image
+                                    source={require("../Constant/DataBase/Apartamento1.jpg")}
+                                    style={styles.image}
+                                />
                             )}
                             <View style={styles.info}>
                                 <Text style={styles.propertyName}>{item.titulo}</Text>
-                                <Text style={styles.propertyPrice}>${item.precio.toLocaleString()} COP</Text>
+                                <Text style={styles.propertyPrice}>
+                                    ${item.precio?.toLocaleString()} COP
+                                </Text>
                                 <Text style={styles.propertyLocation}>{item.ciudad}</Text>
+
                                 <TouchableOpacity style={styles.button}>
                                     <Text style={styles.buttonText}>Ver Detalles</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={{ backgroundColor: "#6200ee", padding: 10, borderRadius: 5, marginTop: 15 }}
-                                    onPress={() => navigation.navigate("Schedule", { property: item })} // envía los datos del inmueble
-                                >
-                                    <Text style={{ color: "white", textAlign: "center", fontWeight: "bold" }}>Agendar</Text>
-                                </TouchableOpacity>
 
+                                <TouchableOpacity
+                                    style={styles.scheduleButton}
+                                    onPress={() => navigation.navigate("Agendar", { property: item })}
+                                >
+                                    <Text style={styles.scheduleText}>Agendar</Text>
+                                </TouchableOpacity>
                             </View>
                         </View>
                     ))
                 ) : (
-                    <Text style={{ textAlign: "center", marginTop: 20 }}>No hay propiedades registradas</Text>
+                    <Text style={{ textAlign: "center", marginTop: 20 }}>
+                        No hay propiedades registradas
+                    </Text>
                 )}
             </ScrollView>
         </View>
@@ -129,38 +165,33 @@ const HomeTwo = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#f5f5f5",
-        paddingTop: 35, // Espacio para que el encabezado no esté pegado arriba
+        backgroundColor: "#f0f4f7",
+        paddingTop: 35,
     },
     header: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        backgroundColor: "#6200ee",
+        backgroundColor: "#4a90e2",
         paddingVertical: 15,
-        paddingHorizontal: 20,
-        elevation: 5, // Sombra en Android
-        shadowColor: "#000",
-        shadowOpacity: 0.2,
-        shadowRadius: 5,
+        paddingHorizontal: 30,
+        elevation: 5,
     },
     title: {
-        fontSize: 22,
-        fontWeight: "bold",
+        fontSize: 20,
+        fontWeight: "700",
         color: "white",
+        fontStyle: "italic",
     },
     menu: {
         position: "absolute",
-        top: 75, // Se coloca debajo del header
+        top: 75,
         right: 20,
         backgroundColor: "white",
-        borderRadius: 8,
+        borderRadius: 10,
         padding: 10,
         elevation: 5,
-        shadowColor: "#000",
-        shadowOpacity: 0.2,
-        shadowRadius: 5,
-        zIndex: 10, // Asegura que esté sobre las imágenes
+        zIndex: 10,
     },
     menuItem: {
         flexDirection: "row",
@@ -172,6 +203,19 @@ const styles = StyleSheet.create({
         marginLeft: 10,
         color: "#333",
     },
+    addButton: {
+        backgroundColor: "#4a90e2",
+        padding: 12,
+        margin: 15,
+        borderRadius: 8,
+        alignItems: "center",
+        elevation: 3,
+    },
+    addButtonText: {
+        color: "white",
+        fontSize: 16,
+        fontWeight: "bold",
+    },
     propertyGrid: {
         flexDirection: "row",
         flexWrap: "wrap",
@@ -182,13 +226,10 @@ const styles = StyleSheet.create({
     card: {
         width: "45%",
         backgroundColor: "white",
-        borderRadius: 10,
+        borderRadius: 12,
         marginBottom: 15,
         overflow: "hidden",
         elevation: 3,
-        shadowColor: "#000",
-        shadowOpacity: 0.2,
-        shadowRadius: 5,
     },
     image: {
         width: "100%",
@@ -204,17 +245,17 @@ const styles = StyleSheet.create({
     },
     propertyPrice: {
         fontSize: 14,
+        color: "#4a90e2",
         fontWeight: "bold",
-        color: "#6200ee",
-        marginTop: 5,
+        marginTop: 4,
     },
     propertyLocation: {
         fontSize: 12,
-        color: "#666",
+        color: "#888",
         marginVertical: 5,
     },
     button: {
-        backgroundColor: "#6200ee",
+        backgroundColor: "#4a90e2",
         paddingVertical: 8,
         borderRadius: 5,
         alignItems: "center",
@@ -225,19 +266,23 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: "bold",
     },
-    addButton: {
-        backgroundColor: "#6200ee",
-        padding: 12,
-        margin: 15,
-        borderRadius: 8,
-        alignItems: "center",
-        elevation: 3,
+    scheduleButton: {
+        backgroundColor: "#357ABD",
+        padding: 10,
+        borderRadius: 5,
+        marginTop: 12,
     },
-    addButtonText: {
+    scheduleText: {
         color: "white",
-        fontSize: 16,
+        textAlign: "center",
         fontWeight: "bold",
     },
+    overlay:{
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: "rgba(0,0,0,0,3)",
+        zIndex: 5,
+    }
 });
 
 export default HomeTwo;
+

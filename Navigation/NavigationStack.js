@@ -16,31 +16,31 @@ const Stack = createStackNavigator();
 
 const NavigationStack = () => {
     return (
-        <Stack.Navigator initialRouteName="Home">
+        <Stack.Navigator initialRouteName="Inicio">
             <Stack.Screen 
-                name="Home" 
+                name="Inicio" 
                 component={Home} 
                // options={{ headerShown: false }} 
             />
             <Stack.Screen 
-                name="Login" 
+                name="Iniciar Sesion"
                 component={Login} 
-                options={{ headerShown: false }} 
+                //options={{ headerShown: false }} 
             />
             <Stack.Screen 
                 name= "Registro" 
                 component={Register}
-                options={{headerShown: false}}
+                //options={{headerShown: false}}
             />
             <Stack.Screen
-                name="HomeTwo"
+                name="Perfil"
                 component={HomeTwo}
-                options={{headerShown: false}}
+                //options={{headerShown: false}}
             />
-            <Stack.Screen name="RegisterProperty" 
+            <Stack.Screen name="Registrar Propiedad"
             component={RegisterProperty} 
             />
-            <Stack.Screen name = "MyPublic"
+            <Stack.Screen name = "Mis Publicaciones"
             component={MyPublic}
             />
             <Stack.Screen
@@ -48,15 +48,15 @@ const NavigationStack = () => {
                 component={CrudProperty}
             />
             <Stack.Screen
-                name='Statictics'
+                name='Mis Estadisticas'
                 component={Statictics}
             />
             <Stack.Screen
-                name='Schedule'
+                name='Agendar'
                 component={Schedule}
             />
             <Stack.Screen
-                name='Appointments'
+                name='Lista Citas'
                 component={Appointments}
             />
         </Stack.Navigator>

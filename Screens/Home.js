@@ -1,37 +1,34 @@
-import React, { useState } from "react";
-import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, Animated, SafeAreaView } from "react-native";
+/*import React, { useEffect, useState } from "react";
+import {
+    View,
+    Text,
+    FlatList,
+    Image,
+    TouchableOpacity,
+    StyleSheet,
+    Animated,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 
-const properties = [
-    {
-        id: "1",
-        title: "Apartamento en Medellín",
-        price: "$500,000,000 COP",
-        location: "Castilla, Medellín",
-        image: require("../Constant/DataBase/Apartamento1.jpg"),
-        description: "Hermoso apartamento con vista panorámica y amplias zonas comunes.",
-    },
-    {
-        id: "2",
-        title: "Casa en Envigado",
-        price: "$850,000,000 COP",
-        location: "Envigado, Antioquia",
-        image: require("../Constant/DataBase/Apartamento2.jpg"),
-        description: "Casa moderna con 3 habitaciones, 2 baños y jardín privado.",
-    },
-    {
-        id: "3",
-        title: "Finca en Rionegro",
-        price: "$1,500,000,000 COP",
-        location: "Rionegro, Antioquia",
-        image: require("../Constant/DataBase/Apartamento3.jpg"),
-        description: "Espectacular finca con piscina y zonas verdes.",
-    },
-];
-
 const Home = () => {
-    const [expandedId, setExpandedId] = useState(null);
     const navigation = useNavigation();
+    const [expandedId, setExpandedId] = useState(null);
+    const [properties, setProperties] = useState([]);
+
+    const fetchProperties = async () => {
+        try {
+            const storedData = await AsyncStorage.getItem("inmuebles");
+            const properties = storedData ? JSON.parse(storedData) : [];
+            setProperties(properties);
+        } catch (error) {
+            console.error("Error al cargar propiedades desde AsyncStorage:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchProperties();
+    }, []);
 
     const toggleDescription = (id) => {
         setExpandedId(expandedId === id ? null : id);
@@ -39,13 +36,14 @@ const Home = () => {
 
     const renderItem = ({ item }) => {
         const isExpanded = expandedId === item.id;
+
         return (
             <View style={styles.card}>
-                <Image source={item.image} style={styles.image} />
+                <Image source={{ uri: item.imagenURI }} style={styles.image} />
                 <View style={styles.cardContent}>
-                    <Text style={styles.title}>{item.title}</Text>
-                    <Text style={styles.price}>{item.price}</Text>
-                    <Text style={styles.location}>{item.location}</Text>
+                    <Text style={styles.title}>{item.titulo}</Text>
+                    <Text style={styles.price}>${item.precio}</Text>
+                    <Text style={styles.location}>{item.ciudad}</Text>
                     <TouchableOpacity
                         style={styles.detailsButton}
                         onPress={() => toggleDescription(item.id)}
@@ -56,13 +54,13 @@ const Home = () => {
                     </TouchableOpacity>
                     {isExpanded && (
                         <Animated.View style={styles.descriptionContainer}>
-                            <Text style={styles.description}>{item.description}</Text>
-                        <TouchableOpacity style = {styles.reserveButton}
-                        onPress={()=>navigation.navigate("Login")}
-                        
-                        >
-                        <Text style ={styles.reserveButtonText}>!!Reserva Ahora¡¡</Text>
-                        </TouchableOpacity>
+                            <Text style={styles.description}>{item.descripcion}</Text>
+                            <TouchableOpacity
+                                style={styles.reserveButton}
+                                onPress={() => navigation.navigate("Iniciar Sesion")}
+                            >
+                                <Text style={styles.reserveButtonText}>¡Reserva Ahora!</Text>
+                            </TouchableOpacity>
                         </Animated.View>
                     )}
                 </View>
@@ -71,63 +69,24 @@ const Home = () => {
     };
 
     return (
-        <SafeAreaView style={styles.safeContainer}>
-            {/* Encabezado con espacio en la parte superior */}
-            <View style={styles.headerContainer}>
-                <Text style={styles.header}>Propiedades Disponibles</Text>
-                <TouchableOpacity
-                    style={styles.loginButton}
-                    onPress={() => navigation.navigate("Login")}
-                >
-                    <Text style={styles.loginText}>Iniciar Sesión</Text>
-                </TouchableOpacity>
-            </View>
-
-            {/* Lista de propiedades */}
+        <View style={styles.container}>
             <FlatList
                 data={properties}
+                keyExtractor={(item, index) => item.id?.toString() || index.toString()}
                 renderItem={renderItem}
-                keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.list}
-                showsVerticalScrollIndicator={false}
             />
-        </SafeAreaView>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
-    safeContainer: {
+    container: {
         flex: 1,
-        backgroundColor: "#f5f5f5",
-        paddingHorizontal: 15,
-        paddingTop: 10, // Agrega espacio en la parte superior
-    },
-    headerContainer: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: 15,
-        paddingHorizontal: 10, // Evita que el contenido toque los bordes laterales
-    },
-    header: {
-        fontSize: 22,
-        fontWeight: "bold",
-        color: "#333",
-    },
-    loginButton: {
-        backgroundColor: "#6200ee",
-        paddingVertical: 8,
-        paddingHorizontal: 15,
-        borderRadius: 20,
-        elevation: 3,
-    },
-    loginText: {
-        color: "white",
-        fontSize: 16,
-        fontWeight: "bold",
+        backgroundColor: "#f8f8f8",
     },
     list: {
-        paddingBottom: 20,
+        padding: 10,
     },
     card: {
         backgroundColor: "#fff",
@@ -135,68 +94,237 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         overflow: "hidden",
         elevation: 3,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
     },
     image: {
         width: "100%",
-        height: 180,
+        height: 200,
     },
     cardContent: {
-        padding: 15,
+        padding: 10,
     },
     title: {
         fontSize: 18,
         fontWeight: "bold",
-        color: "#333",
     },
     price: {
         fontSize: 16,
-        fontWeight: "bold",
-        color: "#6200ee",
-        marginTop: 5,
+        color: "green",
     },
     location: {
         fontSize: 14,
         color: "#666",
-        marginVertical: 5,
     },
     detailsButton: {
         marginTop: 10,
-        backgroundColor: "#6200ee",
-        paddingVertical: 8,
-        borderRadius: 5,
-        alignItems: "center",
     },
     detailsText: {
-        color: "white",
-        fontSize: 16,
+        color: "#007bff",
         fontWeight: "bold",
     },
     descriptionContainer: {
         marginTop: 10,
-        padding: 10,
-        backgroundColor: "#f0f0f0",
-        borderRadius: 5,
     },
     description: {
         fontSize: 14,
         color: "#333",
     },
     reserveButton: {
-        marginTop: 19,
-        backgroundColor: "#6200ee",
-        paddingVertical: 5,
-        paddingHorizontal: 12,
+        backgroundColor: "#28a745",
+        padding: 10,
         borderRadius: 5,
-        alignSelf: "center",
-
+        marginTop: 10,
+        alignItems: "center",
     },
     reserveButtonText: {
-        color: "white",
-        fontSize: 16,
+        color: "#fff",
+        fontWeight: "bold",
+    },
+});
+
+export default Home;*/
+import React, { useEffect, useState } from "react";
+import {
+    View,
+    Text,
+    FlatList,
+    Image,
+    TouchableOpacity,
+    StyleSheet,
+    Animated,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from "@react-navigation/native";
+import Icon from "react-native-vector-icons/Ionicons"; // Asegúrate de tener este paquete instalado
+
+const Home = () => {
+    const navigation = useNavigation();
+    const [expandedId, setExpandedId] = useState(null);
+    const [properties, setProperties] = useState([]);
+
+    const fetchProperties = async () => {
+        try {
+            const storedData = await AsyncStorage.getItem("inmuebles");
+            const properties = storedData ? JSON.parse(storedData) : [];
+            setProperties(properties);
+        } catch (error) {
+            console.error("Error al cargar propiedades desde AsyncStorage:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchProperties();
+    }, []);
+
+    const toggleDescription = (id) => {
+        setExpandedId(expandedId === id ? null : id);
+    };
+
+    const renderItem = ({ item }) => {
+        const isExpanded = expandedId === item.id;
+
+        return (
+            <View style={styles.card}>
+                <Image
+                    source={{ uri: item.imagenURI }}
+                    style={styles.image}
+                    resizeMode="cover"
+                />
+                <View style={styles.cardContent}>
+                    <Text style={styles.title}>{item.titulo}</Text>
+                    <Text style={styles.price}>${item.precio}</Text>
+                    <Text style={styles.location}>{item.ciudad}</Text>
+
+                    <TouchableOpacity
+                        style={styles.detailsButton}
+                        onPress={() => toggleDescription(item.id)}
+                    >
+                        <Text style={styles.detailsText}>
+                            {isExpanded ? "Ocultar detalles" : "Ver detalles"}
+                        </Text>
+                    </TouchableOpacity>
+
+                    {isExpanded && (
+                        <Animated.View style={styles.descriptionContainer}>
+                            <Text style={styles.description}>{item.descripcion}</Text>
+                            <TouchableOpacity
+                                style={styles.reserveButton}
+                                onPress={() => navigation.navigate("Iniciar Sesion")}
+                            >
+                                <Text style={styles.reserveButtonText}>¡Reserva Ahora!</Text>
+                            </TouchableOpacity>
+                        </Animated.View>
+                    )}
+                </View>
+            </View>
+        );
+    };
+
+    return (
+        <View style={styles.container}>
+            {/* Encabezado */}
+            <View style={styles.header}>
+                <Text style={styles.headerTitle}>Inmobiliaria Centenario</Text>
+                <TouchableOpacity onPress={() => navigation.navigate("Iniciar Sesion")}>
+                    <Icon name="person-circle-outline" size={30} color="#333" />
+                </TouchableOpacity>
+            </View>
+
+            <FlatList
+                data={properties}
+                keyExtractor={(item, index) => item.id?.toString() || index.toString()}
+                renderItem={renderItem}
+                contentContainerStyle={styles.list}
+            />
+        </View>
+    );
+};
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: "#f0f2f5",
+    },
+    header: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: 15,
+        backgroundColor: "#ffffff",
+        borderBottomWidth: 1,
+        borderBottomColor: "#ddd",
+    },
+    headerTitle: {
+        fontSize: 20,
+        fontWeight: "bold",
+        color: "#333",
+    },
+    list: {
+        padding: 10,
+    },
+    card: {
+        backgroundColor: "#fff",
+        borderRadius: 12,
+        marginBottom: 20,
+        overflow: "hidden",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 5,
+    },
+    image: {
+        width: "100%",
+        height: 200,
+    },
+    cardContent: {
+        padding: 15,
+    },
+    title: {
+        fontSize: 20,
+        fontWeight: "600",
+        color: "#333",
+        marginBottom: 5,
+    },
+    price: {
+        fontSize: 18,
+        color: "#27ae60",
+        marginBottom: 5,
+    },
+    location: {
+        fontSize: 15,
+        color: "#777",
+        marginBottom: 10,
+    },
+    detailsButton: {
+        backgroundColor: "#5dade2",
+        paddingVertical: 10,
+        borderRadius: 8,
+        alignItems: "center",
+        marginBottom: 5,
+    },
+    detailsText: {
+        color: "#fff",
+        fontSize: 14,
+        fontWeight: "bold",
+    },
+    descriptionContainer: {
+        marginTop: 10,
+    },
+    description: {
+        fontSize: 15,
+        color: "#444",
+        lineHeight: 22,
+    },
+    reserveButton: {
+        backgroundColor: "#58d68d",
+        padding: 12,
+        borderRadius: 8,
+        marginTop: 15,
+        alignItems: "center",
+    },
+    reserveButtonText: {
+        color: "#fff",
+        fontSize: 15,
         fontWeight: "bold",
     },
 });
